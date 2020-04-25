@@ -58,9 +58,9 @@ namespace bankomat{
 
         boost::sml::sm<bk> sm; //klasse dann verwenden um statemachine zu erstellen
 
-        sm.process_event(Abbruch_event);
+        sm.process_event(Abbruch_event());
         sm.visit_current_states([](auto state) { std::cout << state.c_str() << std::endl; });
-        //assert(sm.is(Karte_Ausgeben_state));
+        assert(sm.is(Karte_Ausgeben_state));
     }
 
 } // namespace bankomat
