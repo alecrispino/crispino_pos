@@ -8,6 +8,6 @@ using namespace std;
 
 int main(){
     cout << "bankomat" << endl;
-    
+    bankomat::start();
     return EXIT_SUCCESS;
 }
