@@ -28,4 +28,15 @@ auto Betrag_Auswaehlen_event = "Betrag_Auswaehlen"_e;
 auto Geldentnahme_event = "Geldentnahme"_e;
 auto Abbruch_event = "Abbruch"_e;
 
+//guards
+const auto right_PIN = [](int pin){ if(pin == 0000){
+                                        return true;
+                                    }else{
+                                        return false;
+                                    }
+                                }
+
+//actions
+const auto check_PIN = [] { std::cout << "checking PIN" << std::endl; };
+
 
