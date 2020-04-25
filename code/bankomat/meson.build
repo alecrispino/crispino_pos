@@ -1,8 +1,8 @@
 project('bankomat', 'cpp',
-        default_options: ['warning_level=3', 'cpp_std=c++17', 'werror=true'])
+        default_options: ['cpp_std=c++17', 'werror=true']) #'warning_level=3', 
 
 include_dir = include_directories(['include'])
-src = (['src/main.cpp'])
+src = (['src/main.cpp', 'src/bankomat.cpp'])
 #thread_dep = dependency('threads')
 
 executable('bankomat',
