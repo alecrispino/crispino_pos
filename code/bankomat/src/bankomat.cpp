@@ -36,24 +36,25 @@ namespace bankomat{
     //struct Abbruch_Ev{};
     //auto Abbruch_event = sml::event<Abbruch_Ev>;
 
-    //guards
-    /*const auto right_PIN = [](int pin){ if(pin == 0000){
-                                            return true;
-                                        }else{
-                                            return false;
-                                        }
-                                    };
+    //PIN
+    struct PIN {
+        int value{};
+    };
 
-    //actions
-    const auto check_PIN = [] { std::cout << "checking PIN" << std::endl; };*/
-
-    class bk { //transition table in eigener klasse
-    public:
+    struct bk { //transition table in eigener klasse
     auto operator()() {
         using namespace boost::sml;
+
+        //guards
+        const auto right_PIN = [](PIN& pin){ cout << "PIN VALUE: " << pin.value << endl;
+                                        return pin.value == 1234;
+                                    };
+
         return make_transition_table(
-                * Automat_Bereit_state         + Karte_Einfuehren_event            = PIN_Aufforderung_state,
+                * Automat_Bereit_state         + Karte_Einfuehren_event / []{ cout << "karte einfuehren" << endl; }            = PIN_Aufforderung_state,
                 /* PIN Stuff, Guard, Action */
+                PIN_Aufforderung_state         + PIN_Eingabe_event [right_PIN]                                     = Menue_state,
+                PIN_Aufforderung_state         + PIN_Eingabe_event [!right_PIN]                                    = Karte_Einziehen_state,
                 Menue_state                    + Kontostand_Auswaehlen_event       = Kontostand_state,
                 Menue_state                    + Abheben_Auswaehlen_event          = Geldauswahl_state,
                 Menue_state                    + Abbruch_event                     = Abbrechen_In_Bearbeitung_state,
@@ -72,12 +73,15 @@ namespace bankomat{
     void start()
     {
         cout << "start" << endl;
-
-        boost::sml::sm<bk> sm; //klasse dann verwenden um statemachine zu erstellen
+        PIN p;
+        boost::sml::sm<bk> sm{p}; //klasse dann verwenden um statemachine zu erstellen, parameter is einzugebender PIN
 
         sm.process_event(Karte_Einfuehren_event());
         sm.visit_current_states([](auto state) { std::cout << state.c_str() << std::endl; });
-        assert(sm.is(Automat_Bereit_state));
+        //assert(sm.is(Automat_Bereit_state));
+        p.value = 1234; //channge PIN set user input
+        sm.process_event(PIN_Eingabe_event());
+        sm.visit_current_states([](auto state) { std::cout << state.c_str() << std::endl; });
     }
 
 } // namespace bankomat
