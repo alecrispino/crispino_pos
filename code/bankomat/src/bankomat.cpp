@@ -18,71 +18,27 @@ auto Geldauswahl_state = "Geldauswahl"_s;
 auto Auswahl_Bestaetigen_state = "Auswahl_Bestaetigen"_s;
 auto Geldausgabe_state = "Geldausgabe"_s;
 auto Karte_Einziehen_state = "Karte_Einziehen"_s;
-//auto Karte_Ausgegeben_state = "Karte_Ausgeben"_s;
 auto Abbrechen_In_Bearbeitung_state = "Abbrechen_In_Bearbeitung"_s;
 auto Vorgang_Beendet_state = "Vorgang_Beendet"_s;
 
 //events
-struct Karte_Einfuehren_event
-{
-};
-struct PIN_Eingabe_event
-{
-};
-struct PIN_Falsch_event
-{
-};
-struct PIN_Richtig_event
-{
-};
-struct Kontostand_Auswaehlen_event
-{
-}; // = "Kontostand_Auswahlen"_e;
-struct Abheben_Auswaehlen_event
-{
-}; // = "Abheben_Auswaehlen"_e;
-//auto Kontostand_Bestaetigung_event = "Kontostand_Bestaetigung"_e; //maybe just one for both?
-//auto Auswahl_Bestaetigung_event = "Auswahl_Bestaetigung"_e;       //maybe just one for both?
-struct Bestaetigung_event
-{
-}; // = "Bestaetigung"_e;
-struct Betrag_Auswaehlen_event
-{
-}; // = "Betrag_Auswaehlen"_e;
-struct Geldentnahme_event
-{
-}; // = "Geldentnahme"_e;
-struct Abbruch_event
-{
-}; // = "Abbruch"_e;
-struct Karte_Ausgeben_event
-{
-}; // = "Karte_Ausgeben"_e;
-//struct Abbruch_Ev{};
-//auto Abbruch_event = sml::event<Abbruch_Ev>;
+struct Karte_Einfuehren_event{};
+struct PIN_Eingabe_event{};
+struct PIN_Falsch_event{};
+struct PIN_Richtig_event{};
+struct Kontostand_Auswaehlen_event{};
+struct Abheben_Auswaehlen_event{};
+struct Bestaetigung_event{};
+struct Betrag_Auswaehlen_event{};
+struct Geldentnahme_event{};
+struct Abbruch_event{};
+struct Karte_Ausgeben_event{};
 
 //PIN
 struct PIN
 {
     string value{};
 };
-
-//actions
-/*constexpr auto betrag_Auswaehlen = [](back::process<Betrag_Auswaehlen_event> process){
-    process(Betrag_Auswaehlen_event{});
-};*/
-
-/*constexpr auto abheben = [](back::process<Betrag_Auswaehlen_event> process) { 
-    
-};*/
-
-/*constexpr auto auswahl_bestaetigen = [](back::process<Bestaetigung_event> process){
-    cout << "Um die Auswahl zu bestätigen bitte Enter drücken." << endl;
-    cin.clear();
-    cin.ignore();
-    cin.get();
-    process(Bestaetigung_event{});
-};*/
 
 const auto geldentnahme = []() {
     cout << "Bitte das Geld entnehmen. Um das Geld zu entnehmen Enter Taste drücken." << endl;
@@ -153,7 +109,7 @@ void start()
     if (sm.is(Menue_state))
     {
         cout << "Sie befinden sich im Menü" << endl;
-        cout << "Um ihren Kontostand einzusehen geben Sie 1 ein. Um Geld abzuheben geben Sie 2 ein. Um den Vorganng abzubrechen geben Sie X ein." << endl;
+        cout << "Um ihren Kontostand einzusehen geben Sie 1 ein. Um Geld abzuheben geben Sie 2 ein. Um den Vorgang abzubrechen geben Sie X ein." << endl;
         cin >> input;
         bool wrongInput{true};
         while (wrongInput)
@@ -187,7 +143,7 @@ void start()
         //Kontostand
         if (sm.is(Kontostand_state))
         {
-            cout << "Ihr Kontostand beträgt XXX€." << endl;
+            cout << "Ihr Kontostand beträgt XXX €." << endl;
             cout << "Um den Vorgang zu beenden und zu bestätigen bitte Enter Taste betätigen." << endl;
             cin.clear();
             cin.ignore();
@@ -227,7 +183,7 @@ void start()
 
             if (sm.is(Auswahl_Bestaetigen_state))
             {
-                cout << "Um die Auswahl zu bestätigen bitte 1 eingeben. Um Abbzubrechen bitte X eingeben" << endl;
+                cout << "Um die Auswahl zu bestätigen bitte 1 eingeben. Um Abzubrechen bitte X eingeben" << endl;
                 cin >> input;
                 wrongInput = true;
                 while (wrongInput)
