@@ -133,11 +133,9 @@ void start()
 
     cout << "Automat ist bereit. PIN ist 1234" << endl;
     cout << "Um Karte einzuführen Enter Taste drücken." << endl;
-    //Karte eiführen
+    //Karte einführen
     cin.get();
     sm.process_event(Karte_Einfuehren_event());
-    //sm.visit_current_states([](auto state) { std::cout << state.c_str() << std::endl; });
-    //assert(sm.is(Automat_Bereit_state));
 
     cout << "Bitte geben Sie ihren PIN ein. Um den Vorgang abzubrechen X eingeben." << endl;
 
