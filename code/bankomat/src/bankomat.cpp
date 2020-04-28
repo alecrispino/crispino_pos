@@ -21,25 +21,6 @@ auto Karte_Einziehen_state = "Karte_Einziehen"_s;
 auto Abbrechen_In_Bearbeitung_state = "Abbrechen_In_Bearbeitung"_s;
 auto Vorgang_Beendet_state = "Vorgang_Beendet"_s;
 
-//events
-struct Karte_Einfuehren_event{};
-struct PIN_Eingabe_event{};
-struct PIN_Falsch_event{};
-struct PIN_Richtig_event{};
-struct Kontostand_Auswaehlen_event{};
-struct Abheben_Auswaehlen_event{};
-struct Bestaetigung_event{};
-struct Betrag_Auswaehlen_event{};
-struct Geldentnahme_event{};
-struct Abbruch_event{};
-struct Karte_Ausgeben_event{};
-
-//PIN
-struct PIN
-{
-    string value{};
-};
-
 const auto geldentnahme = []() {
     cout << "Bitte das Geld entnehmen. Um das Geld zu entnehmen Enter Taste drücken." << endl;
     cin.clear();
@@ -47,6 +28,11 @@ const auto geldentnahme = []() {
     cin.get();
     cout << "Geld entnommen." << endl;
     return true;
+};
+
+//PIN
+struct PIN{
+    std::string value{};
 };
 
 struct bk
@@ -81,21 +67,21 @@ struct bk
 
 void start()
 {
-    string input;
-    //int value{};
-
     PIN p;
     boost::sml::sm<bk, process_queue<std::queue>> sm{p}; //klasse dann verwenden um statemachine zu erstellen, parameter is einzugebender PIN
 
     cout << "Automat ist bereit. PIN ist 1234" << endl;
     cout << "Um Karte einzuführen Enter Taste drücken." << endl;
     //Karte einführen
-    cin.get();
+    cin.ignore(256, '\n');
     sm.process_event(Karte_Einfuehren_event());
 
     cout << "Bitte geben Sie ihren PIN ein. Um den Vorgang abzubrechen X eingeben." << endl;
 
     //PIN Eingabe
+    string input;
+
+    cin.clear();
     cin >> input;
     if (input.compare("X") == 0 || input.compare("x") == 0)
     {
