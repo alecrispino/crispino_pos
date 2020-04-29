@@ -14,5 +14,8 @@ namespace bankomat{
     struct Abbruch_event{};
     struct Karte_Ausgeben_event{};
 
+    struct PIN;
+    struct bk;
+
     void start();
 }
