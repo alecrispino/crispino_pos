@@ -1,5 +1,5 @@
-#include <iostream>
 #include "bankomat.h"
+#include <iostream>
 
 using namespace std;
 

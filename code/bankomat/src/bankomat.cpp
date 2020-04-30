@@ -1,8 +1,8 @@
-#include <iostream>
-#include "sml.hpp"
 #include "bankomat.h"
-#include "checkIfInt.h"
+#include "sml.hpp"
+#include <iostream>
 #include <queue>
+#include "checkIfInt.h"
 
 using namespace boost::sml;
 using namespace std;
@@ -10,19 +10,20 @@ using namespace std;
 namespace bankomat
 {
 //states
-auto Automat_Bereit_state = "Automat_Bereit"_s;
-auto PIN_Aufforderung_state = "PIN_Aufforderung"_s;
-auto Menue_state = "Menue"_s;
-auto Kontostand_state = "Kontostand"_s;
-auto Geldauswahl_state = "Geldauswahl"_s;
-auto Auswahl_Bestaetigen_state = "Auswahl_Bestaetigen"_s;
-auto Geldausgabe_state = "Geldausgabe"_s;
-auto Karte_Einziehen_state = "Karte_Einziehen"_s;
-auto Abbrechen_In_Bearbeitung_state = "Abbrechen_In_Bearbeitung"_s;
-auto Vorgang_Beendet_state = "Vorgang_Beendet"_s;
+auto machine_ready_state = "Automat_Bereit"_s;
+auto pin_request_state = "PIN_Aufforderung"_s;
+auto menue_state = "Menue"_s;
+auto bank_balance_state = "Kontostand"_s;
+auto money_selection_state = "Geldauswahl"_s;
+auto confirm_selection_state = "Auswahl_Bestaetigen"_s;
+auto money_output_state = "Geldausgabe"_s;
+auto withdraw_card_state = "Karte_Einziehen"_s;
+auto cancel_in_progress_state = "Abbrechen_In_Bearbeitung"_s;
+auto operation_ended_state = "Vorgang_Beendet"_s;
 
-const auto geldentnahme = []() {
-    cout << "Bitte das Geld entnehmen. Um das Geld zu entnehmen Enter Taste drücken." << endl;
+const auto withdraw = []() {
+    cout << "Bitte das Geld entnehmen. Um das Geld zu entnehmen Enter Taste drücken." 
+         << endl;
     cin.clear();
     cin.ignore();
     cin.get();
@@ -35,7 +36,7 @@ struct PIN{
     std::string value{};
 };
 
-struct bk
+struct Bankomat
 { //transition table in eigener klasse
     auto operator()()
     {
@@ -47,36 +48,96 @@ struct bk
         };
 
         return make_transition_table(
-            *Automat_Bereit_state + event<Karte_Einfuehren_event> / [] { cout << "Karte wird eingeführt" << endl; } = PIN_Aufforderung_state,
-            PIN_Aufforderung_state + event<PIN_Eingabe_event>[right_PIN] / [] { cout << "PIN ist richtig" << endl; } = Menue_state,
-            PIN_Aufforderung_state + event<PIN_Eingabe_event>[!right_PIN] / [] { cout << "PIN ist falsch, Karte wird eingezogen" << endl; } = Karte_Einziehen_state,
-            PIN_Aufforderung_state + event<Abbruch_event> = Abbrechen_In_Bearbeitung_state,
-            Menue_state + event<Kontostand_Auswaehlen_event> / [] { cout << "Option Kontostand wurde gewählt" << endl; } = Kontostand_state,
-            Menue_state + event<Abheben_Auswaehlen_event> / [] { cout << "Option Abheben wurde gewählt" << endl; } = Geldauswahl_state,
-            Menue_state + event<Abbruch_event> / [] { cout << "Vorgang wird abgebrochen" << endl; } = Abbrechen_In_Bearbeitung_state,
-            Kontostand_state + event<Bestaetigung_event> / [] { cout << "Option wurde bestaetigt" << endl; } = Vorgang_Beendet_state,
-            Geldauswahl_state + event<Betrag_Auswaehlen_event> /*abheben*/ = Auswahl_Bestaetigen_state,
-            Geldauswahl_state + event<Abbruch_event> / [] { cout << "Vorgang wird abgebrochen" << endl; } = Abbrechen_In_Bearbeitung_state,
-            Auswahl_Bestaetigen_state + event<Bestaetigung_event> / [] { cout << "Auswahl bestätigen" << endl; } = Geldausgabe_state,
-            Auswahl_Bestaetigen_state + event<Abbruch_event> / [] { cout << "Vorgang wird abgebrochen" << endl; } = Abbrechen_In_Bearbeitung_state,
-            Geldausgabe_state + event<Geldentnahme_event>[geldentnahme] / process(Karte_Ausgeben_event{}) = Vorgang_Beendet_state,
-            Vorgang_Beendet_state + event<Karte_Ausgeben_event> / [] { cout << "Karte wird ausgegeben" << endl; } = X,
-            Abbrechen_In_Bearbeitung_state + event<Karte_Ausgeben_event> / [] { cout << "Karte wird ausgegeben" << endl; } = X);
+            *machine_ready_state + 
+                event<input_card_event> 
+                    / [] { cout << "Karte wird eingeführt" << endl; } 
+                        = pin_request_state,
+
+            pin_request_state + 
+                event<input_pin_event>[right_PIN] 
+                    / [] { cout << "PIN ist richtig" << endl; } 
+                        = menue_state,
+
+            pin_request_state + 
+                event<input_pin_event>[!right_PIN] 
+                    / [] { cout << "PIN ist falsch, Karte wird eingezogen" << endl; } 
+                        = withdraw_card_state,
+
+            pin_request_state +
+                event<cancel_event> 
+                = cancel_in_progress_state,
+
+            menue_state + 
+                event<select_balance_event> 
+                    / [] { cout << "Option Kontostand wurde gewählt" << endl; } 
+                        = bank_balance_state,
+
+            menue_state 
+                + event<select_withdraw_event> 
+                    / [] { cout << "Option Abheben wurde gewählt" << endl; } 
+                        = money_selection_state,
+
+            menue_state 
+                + event<cancel_event> 
+                    / [] { cout << "Vorgang wird abgebrochen" << endl; } 
+                        = cancel_in_progress_state,
+
+            bank_balance_state 
+                + event<confirm_event> 
+                    / [] { cout << "Option wurde bestaetigt" << endl; } 
+                        = operation_ended_state,
+
+            money_selection_state 
+                + event<confirm_amount_event> 
+                    = confirm_selection_state,
+
+            money_selection_state 
+                + event<cancel_event> 
+                    / [] { cout << "Vorgang wird abgebrochen" << endl; } 
+                        = cancel_in_progress_state,
+
+            confirm_selection_state 
+                + event<confirm_event> 
+                    / [] { cout << "Auswahl bestätigen" << endl; } 
+                        = money_output_state,
+
+            confirm_selection_state 
+                + event<cancel_event> 
+                    / [] { cout << "Vorgang wird abgebrochen" << endl; } 
+                        = cancel_in_progress_state,
+
+            money_output_state 
+                + event<withdraw_money_event>[withdraw] 
+                    / process(card_output_event{}) 
+                        = operation_ended_state,
+
+            operation_ended_state 
+                + event<card_output_event> 
+                    / [] { cout << "Karte wird ausgegeben" << endl; } 
+                        = X,
+
+            cancel_in_progress_state 
+                + event<card_output_event> 
+                    / [] { cout << "Karte wird ausgegeben" << endl; } 
+                        = X
+        );
     }
 };
 
-void start()
-{
+void start(){
     PIN p;
-    boost::sml::sm<bk, process_queue<std::queue>> sm{p}; //klasse dann verwenden um statemachine zu erstellen, parameter is einzugebender PIN
+    //klasse dann verwenden um statemachine zu erstellen, parameter is einzugebender PIN
+    boost::sml::sm<Bankomat, process_queue<std::queue>> sm{p}; 
 
     cout << "Automat ist bereit. PIN ist 1234" << endl;
     cout << "Um Karte einzuführen Enter Taste drücken." << endl;
     //Karte einführen
     cin.ignore(256, '\n');
-    sm.process_event(Karte_Einfuehren_event());
+    sm.process_event(input_card_event());
 
-    cout << "Bitte geben Sie ihren PIN ein. Um den Vorgang abzubrechen X eingeben." << endl;
+    cout << "Bitte geben Sie ihren PIN ein." 
+         << "Um den Vorgang abzubrechen X eingeben." 
+         << endl;
 
     //PIN Eingabe
     string input;
@@ -85,41 +146,44 @@ void start()
     cin >> input;
     if (input.compare("X") == 0 || input.compare("x") == 0)
     {
-        sm.process_event(Abbruch_event());
-        sm.process_event(Karte_Ausgeben_event());
+        sm.process_event(cancel_event());
+        sm.process_event(card_output_event());
     }
     p.value = input; //change PIN set user input
-    sm.process_event(PIN_Eingabe_event());
+    sm.process_event(input_pin_event());
 
     //Menü
-    if (sm.is(Menue_state))
+    if (sm.is(menue_state))
     {
         cout << "Sie befinden sich im Menü" << endl;
-        cout << "Um ihren Kontostand einzusehen geben Sie 1 ein. Um Geld abzuheben geben Sie 2 ein. Um den Vorgang abzubrechen geben Sie X ein." << endl;
+        cout << "Um ihren Kontostand einzusehen geben Sie 1 ein." 
+             << "Um Geld abzuheben geben Sie 2 ein."
+             << "Um den Vorgang abzubrechen geben Sie X ein." 
+             << endl;
         cin >> input;
-        bool wrongInput{true};
-        while (wrongInput)
+        bool wrong_input{true};
+        while (wrong_input)
         {
             if (input.compare("1") == 0)
             {
-                sm.process_event(Kontostand_Auswaehlen_event());
-                wrongInput = false;
+                sm.process_event(select_balance_event());
+                wrong_input = false;
             }
 
             if (input.compare("2") == 0)
             {
-                sm.process_event(Abheben_Auswaehlen_event());
-                wrongInput = false;
+                sm.process_event(select_withdraw_event());
+                wrong_input = false;
             }
 
             if (input.compare("X") == 0 || input.compare("x") == 0)
             {
-                sm.process_event(Abbruch_event());
-                sm.process_event(Karte_Ausgeben_event());
-                wrongInput = false;
+                sm.process_event(cancel_event());
+                sm.process_event(card_output_event());
+                wrong_input = false;
             }
 
-            if (wrongInput)
+            if (wrong_input)
             {
                 cout << "Fehlerhafte Eingabe. Bitte erneut eingeben." << endl;
                 cin >> input;
@@ -127,77 +191,84 @@ void start()
         }
 
         //Kontostand
-        if (sm.is(Kontostand_state))
+        if (sm.is(bank_balance_state))
         {
             cout << "Ihr Kontostand beträgt 132 €." << endl;
-            cout << "Um den Vorgang zu beenden und zu bestätigen bitte Enter Taste betätigen." << endl;
+            cout << "Um den Vorgang zu beenden und zu bestätigen Enter Taste betätigen."
+                 << endl;
             cin.clear();
             cin.ignore();
             cin.get();
-            sm.process_event(Bestaetigung_event());
-            sm.process_event(Karte_Ausgeben_event());
+            sm.process_event(confirm_event());
+            sm.process_event(card_output_event());
         }
 
         //Geldauswahl
-        if (sm.is(Geldauswahl_state))
+        if (sm.is(money_selection_state))
         {
             string input;
-            bool wrongInput = true;
-            cout << "Bitte geben Sie den gewünschten Betrag ein. Um Abzubrechen bitte X eingeben." << endl;
-            while (wrongInput)
+            bool wrong_input = true;
+            cout << "Bitte geben Sie den gewünschten Betrag ein." 
+                 << "Um Abzubrechen bitte X eingeben." 
+                 << endl;
+            while (wrong_input)
             {
                 cin >> input;
                 if (input.compare("X") == 0 || input.compare("x") == 0)
-                { // Abbruch noch machen
-                    sm.process_event(Abbruch_event{});
-                    sm.process_event(Karte_Ausgeben_event{});
-                    wrongInput = false;
+                {
+                    sm.process_event(cancel_event{});
+                    sm.process_event(card_output_event{});
+                    wrong_input = false;
                 }
 
                 if (checkIfInt(input))
                 {
                     if(stoi(input) > 0){
                         cout << "Folgender Betrag wurde ausgewählt: " << input << endl;
-                        sm.process_event(Betrag_Auswaehlen_event{});
-                        wrongInput = false;
+                        sm.process_event(confirm_amount_event{});
+                        wrong_input = false;
                     }
                 };
 
-                if (wrongInput)
+                if (wrong_input)
                 {
-                    cout << "Fehlerhafte Eingabe. Beachten Sie das der Beitrag positiv sein muss und nur Zahlen enthalten darf." << endl;
+                    cout << "Fehlerhafte Eingabe. Beachten Sie das der Beitrag positiv" 
+                         << " sein muss und nur Zahlen enthalten darf." 
+                         << endl;
                     cout << "Bitte erneut eingeben: ";
                 }
             }
 
-            if (sm.is(Auswahl_Bestaetigen_state))
+            if (sm.is(confirm_selection_state))
             {
-                cout << "Um die Auswahl zu bestätigen bitte 1 eingeben. Um Abzubrechen bitte X eingeben" << endl;
+                cout << "Um die Auswahl zu bestätigen bitte 1 eingeben." 
+                     << "Um Abzubrechen bitte X eingeben" 
+                     << endl;
                 cin >> input;
-                wrongInput = true;
-                while (wrongInput)
+                wrong_input = true;
+                while (wrong_input)
                 {
                     if (input.compare("1") == 0)
                     {
-                        sm.process_event(Bestaetigung_event{});
-                        wrongInput = false;
+                        sm.process_event(confirm_event{});
+                        wrong_input = false;
                     }
 
                     if (input.compare("X") == 0 || input.compare("x") == 0)
                     {
-                        sm.process_event(Abbruch_event());
-                        sm.process_event(Karte_Ausgeben_event());
-                        wrongInput = false;
+                        sm.process_event(cancel_event());
+                        sm.process_event(card_output_event());
+                        wrong_input = false;
                     }
 
-                    if (wrongInput)
+                    if (wrong_input)
                     {
                         cout << "Fehlerhafte Eingabe. Bitte erneut eingeben." << endl;
                         cin >> input;
                     }
                 }
 
-                sm.process_event(Geldentnahme_event{});
+                sm.process_event(withdraw_money_event{});
             }
         }
     }

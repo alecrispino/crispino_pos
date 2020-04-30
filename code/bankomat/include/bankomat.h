@@ -2,20 +2,20 @@
 
 namespace bankomat{
     //events
-    struct Karte_Einfuehren_event{};
-    struct PIN_Eingabe_event{};
-    struct PIN_Falsch_event{};
-    struct PIN_Richtig_event{};
-    struct Kontostand_Auswaehlen_event{};
-    struct Abheben_Auswaehlen_event{};
-    struct Bestaetigung_event{};
-    struct Betrag_Auswaehlen_event{};
-    struct Geldentnahme_event{};
-    struct Abbruch_event{};
-    struct Karte_Ausgeben_event{};
+    struct input_card_event{};
+    struct input_pin_event{};
+    struct wrong_pin_event{};
+    struct right_pin_event{};
+    struct select_balance_event{};
+    struct select_withdraw_event{};
+    struct confirm_event{};
+    struct confirm_amount_event{};
+    struct withdraw_money_event{};
+    struct cancel_event{};
+    struct card_output_event{};
 
     struct PIN;
-    struct bk;
+    struct Bankomat;
 
     void start();
 }
