@@ -4,8 +4,6 @@ namespace bankomat{
     //events
     struct input_card_event{};
     struct input_pin_event{};
-    struct wrong_pin_event{};
-    struct right_pin_event{};
     struct select_balance_event{};
     struct select_withdraw_event{};
     struct confirm_event{};
