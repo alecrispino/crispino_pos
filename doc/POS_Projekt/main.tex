@@ -347,11 +347,52 @@ struct PIN{
 };
 \end{lstlisting}
 %guards definiert
+\subsection{Guards}
+Guards werden verwendet um Übergänge nur dann zu ermöglich, wenn diese mittels Guards ``verifiziert`` werden. In diesem Projekt wurden hierfür zwei Guards erstellt, diese sind:
+\subsubsection{withdraw}
+Dieser Guard diente zur Bestätigung, welche mittels Betätigung der Enter Taste realisiert wurde. Dies wurde mittels der Methode ``cin.get()`` erzielt. Der Aufbau dieses Guards war folgender:
+\begin{lstlisting}
+const auto withdraw = []() {
+    cout << "Bitte das Geld entnehmen." 
+         << "Um das Geld zu entnehmen Enter Taste druecken." 
+         << endl;
+    cin.clear();
+    cin.ignore();
+    cin.get();
+    cout << "Geld entnommen." << endl;
+    return true;
+};
+\end{lstlisting}
+\subsubsection{right\_PIN}
+Im Guard ``right\_PIN`` wurde die Eingabe des Pins überprüft. Da es eine fixe Pin gab, wurde dies einfach auf folgende Weise überprüft:
+\begin{lstlisting}
+const auto right_PIN = [](PIN &pin) {
+    return !pin.value.compare("1234");
+};
+\end{lstlisting}
+Um hierbei auf die Dependencies der State Machine zugreifen zu können, wurde der Guard in der Struktur des Bankomaten implementiert.
 %start Methode
 %Pin angelegt sm angelegt
+\subsection{Methode start()}
+In der Funktion ``start()`` wurde die gesamte Logik des Automaten abgewickelt. Hierfür wurde anfangs Objekt der Struktur Pin angelegt, welche anschließend bei der Initialisierung der State Machine als Parameter übergeben wurde. Außerdem wurde der State Machine noch eine ``process\_queue`` übergeben welche dazu diente, dass events auch in Actions ausgelöst werden können. 
+\subsubsection{Warten auf Bankomatkarte}
+Zu Beginn wurde mittels der Methode ``cin.ignore()`` auf das Einführen der Karte gewartet, ist diese mittels drücken der Enter Taste beendet worden, wurde anschliessend das Event ``input\_card\_event()`` ausgelöst. 
+\subsubsection{PIN Eingabe}
 %Eingabe
+Als nächstes wurde der Pin Code des Users abgefragt. Hierbei wurde wurde bei der Eingabe überprüft, dass nur Zahlen eingegeben worden sind. Die Überprüfung des Pins auf Richtigkeit wurde anschließend im unter Punkt 3.2.6 erwähnten Guards gemacht. War die Eingabe des Pins erfolgreich gelang man weiter ins Menü. Andernfalls wurde die Karte eingezogen und der Bankomat beendet.
+\subsubsection{Menü}
 %Menü
+Im Menü kann zwischen zwei Optionen gewählt werden, diese sind ``Kontostand`` und ``Geld abheben``. Die Auswahl wurde mittels eingeben der Zahlen 1 und 2 getroffen, wobei 1 für ``Kontostand`` und 2 für ``Geld abheben`` verwendet wurde. 
+
+\subsubsection{Option Kontostand}
 %Kontostand
+In der Option ``Kontostand`` wurde ein fixer Kontostand ausgegeben und anschließend auf die Bestätigung mittels drücken der Enter Taste gewartet. Nach der Bestätigung wurde der Bankomat beendet.
+
+\subsubsection{Option Geld abheben}
 %Geld abheben
+In der Option ``Geld abheben`` wird man zuerst aufgefordert einen Wunschbetrag einzugeben, welchen man beabsichtigt abzuhben. Dieser Betrag darf nur aus Zahlen bestehen und muss positiv sein. Ist eine korrekter Betrag eingegeben worden, wird man letztendlich aufgefordert seine Auswahl mittels eingeben der Zahl 1 zu bestätigen. Wurde die Auswahl bestätigt wird der Benutzer aufgefordert sein Geld zu entnehmen, dies wurde ebenfalls mittels drücken der Enter Taste realisiert. Zum Schluss wurde die Karte ausgegeben und das Programm hat sich beendet.
+
+\subsubsection{Abbrechen}
+Außerdem wurde es dem Benutzer in ausgewählten, im Zustandsdiagramm Abb. 3.1 ersichtlich, Zuständen den Vorgang abzubrechen. Dies wurde mittels eingeben der Taste ``X`` oder ``x`` umgesetzt. Wurde der Vorgang abgebrochen, wird die Karte ausgegeben und das Programm beendet.
 
 \end{document}
