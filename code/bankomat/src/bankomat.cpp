@@ -129,7 +129,7 @@ void start()
         //Kontostand
         if (sm.is(Kontostand_state))
         {
-            cout << "Ihr Kontostand beträgt XXX €." << endl;
+            cout << "Ihr Kontostand beträgt 132 €." << endl;
             cout << "Um den Vorgang zu beenden und zu bestätigen bitte Enter Taste betätigen." << endl;
             cin.clear();
             cin.ignore();
@@ -156,14 +156,17 @@ void start()
 
                 if (checkIfInt(input))
                 {
-                    cout << "Folgender Betrag wurde ausgewählt: " << input << endl;
-                    sm.process_event(Betrag_Auswaehlen_event{});
-                    wrongInput = false;
+                    if(stoi(input) > 0){
+                        cout << "Folgender Betrag wurde ausgewählt: " << input << endl;
+                        sm.process_event(Betrag_Auswaehlen_event{});
+                        wrongInput = false;
+                    }
                 };
 
                 if (wrongInput)
                 {
-                    cout << "Nur Zahlen möglich. Bitte erneut eingeben: ";
+                    cout << "Fehlerhafte Eingabe. Beachten Sie das der Beitrag positiv sein muss und nur Zahlen enthalten darf." << endl;
+                    cout << "Bitte erneut eingeben: ";
                 }
             }
 
