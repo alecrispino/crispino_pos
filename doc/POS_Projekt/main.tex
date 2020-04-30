@@ -1,0 +1,235 @@
+\documentclass{report}
+\usepackage{blindtext}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{listings}
+
+
+\title{POS Projekt}
+\author{Alessandro Crispino}
+\date{April 2020}
+
+%\usepackage{natbib}
+\usepackage{graphicx}
+
+\begin{document}
+
+\maketitle
+\tableofcontents
+
+%includes
+%\include{sections/einleitung}
+
+%\bibliographystyle{plain}
+%\bibliography{references}
+
+\chapter{Einleitung}
+Dieses Projekt wurde im Zuge der Aubesserung der POS-Note durchgeführt. Die Aufgabe war es einen Bankomaten, wie er in Österreich existiert, mittels der Library ``[Boost].SML`` zu implementieren. Dafür wurde zuerst ein UML-Zustandsdiagramm erstellt und dieses anschliessend mittels ``[Boost].SML`` umgesetzt.
+
+
+\chapter{[Boost].SML}
+\begin{figure}[h]
+  \centering
+  \includegraphics[scale=0.5]{images/boost.png}
+  \caption[Logo]{Logo [Boost].SML} 
+\end{figure}
+
+Bei [Boost].SML handelt es sich handelt es sich um eine skalierbare header-only State Machine Library. Mittels dieser Bibliothek soll es ermöglicht werden unstrukturierten und unleserlichen Code zu verbessern. [Boost].SML ist ausserdem eine Verbesserung des Vorgängers Boost.MSM, welcher einige Nachteile hatte. Somit kann man [Boost].SML auch als Verbesserung von Boost.MSM definieren. [Boost].SML kann ab C++14 verwendet werden.
+
+\section{Features}
+Im folgenden Abschnitt werden die einzelnen Funktionen und Elemente der Bibliothek aufgezählt und erklärt.
+
+\subsection{States / Zustände und Events / Ereignis}
+Ein endlicher Automat besteht aus einer endlichen Anzahl von Zuständen und Übergängen. Diese Übergänge werden durch Ereignisse ausgelöst. Daher handelt es sich bei States und Events um Grundelemente der Library. 
+
+\subsubsection{Implementierung States}
+States werden folgendermaßen implementiert: 
+\begin{lstlisting}
+auto Automat_Bereit_state = "Automat_Bereit"_s;
+\end{lstlisting}
+Ausserdem können Endzustände festgelegt werden welche folgend implementiert werden:
+\begin{lstlisting}
+"Automat_Bereit"_s = X;
+\end{lstlisting}
+Zustände können zudem folgendermaßen ausgegeben werden:
+\begin{lstlisting}
+std::cout << state.c_str() << std::endl;
+\end{lstlisting}
+
+\subsubsection{Implementierung Events}
+Events können folgendermaßen implementiert werden:
+\begin{lstlisting}
+struct Karte_Einfuehren_event{};
+\end{lstlisting}
+
+\subsection{Guards und Actions}
+Bei Guards und Actions handelt es sich um aufrufbare Objekte welche vom Automaten ausgeführt werden um zu überprüfen ob ein Übergang stattfinden soll. Guards müssen hierbei einen booleschen Wert zurückliefern. Actions hingegen müssen keine Rückgabewert besitzen.
+
+\subsubsection{Implementierung Guards}
+Guards können wie folgt implementiert werden:
+\begin{lstlisting}
+const auto geldentnahme = []() {
+    //Code
+    return true;
+};
+\end{lstlisting}
+
+\subsubsection{Implementierung Actions}
+Actions werden ähnlich wie Guards erstellt allerdings müssen diese, wie bereits erwähnt, nichts zurückgeben. Ausserdem können diese auch mittels Lambda Ausdrücken im Transition Table implementiert werden. Dies sieht folgendermaßen aus:
+\begin{lstlisting}
+event<name\_event> / [] { cout << ``Karte wird eingeführt`` < endl; }
+\end{lstlisting}
+Dazu später mehr
+%vielleicht unterpunkt dann verlinken
+
+\subsection{Transition Table}
+Um States, Events, Guards und Actions zu verbinden wird ein Transition Table benötigt. Dieser verbindet alle oben erwähnten Elemente und bildet daraus einen Automaten. Ein Transition Table kann folgendermaßen aussehen:
+\begin{lstlisting}
+using namespace sml;
+
+make_transition_table(
+ *"src_state"_s + event<my_event> [ guard ] / action = "dst_state"_s
+, "dst_state"_s + "other_event"_e = X
+);
+\end{lstlisting}
+\vspace{5mm}
+Ausserdem können bei der Implementierung eines solchen Tables zwei verschiedene Notationen verwendet werden, diese sind die Postfix und Prefix Notation. 
+\newline
+Die folgende Auflistung zeigt die verschiedenen Funktion, in den verschiedenen Notationen:
+
+\textbf{Postfix:}
+\begin{itemize}
+    \item Übergang Zustand und Event mit Guard: \newline state + event [ guard ]
+    \item anonymer Übergang mit Action: \newline src\_state / [] {} = dst\_state
+    \item Selbstübergang: \newline src\_state / [] {} = src\_state
+    \item Übergang ohne Guard oder Action: \newline src\_state + event = dst\_state
+    \item Übergang mit Guard und Action: \newline src\_state + event [ guard ] / action = dst\_state	
+    \item Übergang mit mehreren Guards und Actions: \newline src\_state + event [ guard \&\& (![]{return true;} \&\& guard2) ] / (action, action2, []{}) = dst\_state	
+\end{itemize}
+
+\textbf{Prefix:}
+\begin{itemize}
+    \item Übergang Zustand und Event mit Guard: \newline state + event [ guard ]
+    \item anonymer Übergang mit Action: \newline dst\_state <= src\_state / [] {}
+    \item Selbstübergang: \newline src\_state <= src\_state / [] {}
+    \item Übergang ohne Guard oder Action: \newline dst\_state <= src\_state + event
+    \item Übergang mit Guard und Action: \newline dst\_state <= src\_state + event [ guard ] / action
+    \item Übergang mit mehreren Guards und Actions: \newline dst\_state <= src\_state + event [ guard \&\& (![]{return true;} \&\& guard2) ] / (action, action2, []{})
+\end{itemize}
+
+\subsection{Startzustände}
+Da jeder Automat an einem bestimmten Punkt beginnen muss gibt es Startzustände. Diese definieren den Anfang eines Automaten. Startzustände werden mittels eines Sternchens ``*`` implementiert. Dies sieht folgendermaßen aus:
+\begin{lstlisting}
+return make_transition_table(
+    *start\_state + event<name\_event> = end\_state
+);
+\end{lstlisting}
+
+\subsection{State Machine}
+%4Methoden noch Zeigen
+Um eine State Machine zu erstellen wird ein Transition Table benötigt. Dieser Transition Table wird mittels der Funktion ``make\_transition\_table`` in einem überladenen Operator ``()`` einer Klasse erstellt. Dies sieht folgendermaßen aus:
+\begin{lstlisting}
+class test {
+public:
+  auto opeartor()() {
+    using namespace sml;
+    return make_transition_table(
+     *"src_state"_s + event<my_event> [ guard ] / action = "dst_state"_s,
+      "dst_state"_s + event<game_over> = X
+    );
+  }
+};
+\end{lstlisting}
+Mittels folgendem Code wird anschließend eine State Machine erzeugt:
+\begin{lstlisting}
+sml::sm<test> sm;
+\end{lstlisting}
+Ausserdem können den Guards und Actions Parameter mittels des Konstruktors übergeben werden. Um dies besser nachvollziehen zu können, dient folgendes Code-Beispiel:
+\begin{lstlisting}
+auto guard = [](double d) { return true; }
+                   |
+                   \--------\
+                            |
+auto action = [](int i){}   |
+                  |         |
+                  |         |
+                  \-\   /---/
+                    |   |
+sml::sm<example> s{42, 87.0};
+\end{lstlisting}
+
+\subsection{Events ausführen}
+Um einen Automaten verwenden zu können, müssen die einzelnen Events ausgeführt werden. Ist dies im Transition Table richtig definiert so gelangt man von einem Zustand mittels der Ausführung eines Events in den nächsten. Dafür gibt es die Methode ``process\_event``. Diese wird folgendermaßen verwendet:
+\begin{lstlisting}
+sml::sm<example> sm;
+
+sm.process_event(event{});
+\end{lstlisting}
+Events können außerdem auch im Transition Table ausgelöst werden. Das wird wie folgt gemacht:
+\begin{lstlisting}
+start_state + event<my_event> / process(my_event_to_process{}) = end_state
+\end{lstlisting}
+
+\subsection{Fehlerbehandlung}
+Falls es zu dem Fall kommen sollte, dass eine State Machine ein ausgelöstes Event nicht behandeln kann, kommt es zu einem ``unexpected event``. Ein solches kann auf folgende Weise abgefangen werden: 
+\begin{lstlisting}
+"start_state"_s + unexpected_event<some_event> = X
+\end{lstlisting}
+Ausserdem können auch unbekannte Events mit folgendem Code abgefangen werden:
+\begin{lstlisting}
+"start_state"_s + unexpected_event<_> = X
+\end{lstlisting}
+\subsection{Testen}
+Um den Automaten auch während des Erstellens testen zu können werden folgende Methoden bereitgestellt:
+\begin{itemize}
+    \item state\_machine.is: prüfen ob state\_machine im angegebenen Zustand ist
+    \item state\_machine.set\_current\_states: setzt den derzeitigen Zustand der state\_machine in den angegebenen Zustand
+    \item state\_machine.visit\_current\_states: gibt den derzeitigen Zustand der state\_machine zurück
+\end{itemize}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+%Download: wget https://raw.githubusercontent.com/boost-experimental/sml/master/include/boost/sml.hpp
+
+%Erklären was sind States, Events, Guards und Actions
+
+%Dann schreiben wie man das implementiert hat
+
+%Guard -> checken ob event gültig ist
+%so: 
+%PIN_Aufforderung_state + PIN_Eingabe_event [right_PIN] = Menue_state,
+%PIN_Aufforderung_state + PIN_Eingabe_event [!right_PIN] = %Karte_Einziehen_state,
+
+%struct PIN erstellen mit value
+%guard erstellenn wo gecheckt wird ob die PIN richtig ist
+%PIN anlegen
+%in statemachine deklaration übergeben
+%vor dem process PIn Eingabe event setzen mit user input
+\chapter{Bankomat}
+\end{document}
